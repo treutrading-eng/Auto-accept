@@ -7,7 +7,8 @@
   люди будут вступать сразу.
 - Бот должен быть администратором в этой группе/канале с правом
   "Добавление участников" (Add Users / Invite via Link).
-- Когда приходит новая заявка (ChatJoinRequest), бот сразу её одобряет.
+- Когда приходит новая заявка (ChatJoinRequest), бот сразу её одобряет,
+  без отправки каких-либо сообщений.
 
 Установка зависимостей:
     pip install python-telegram-bot --upgrade
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 async def auto_approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Автоматически одобряет любую заявку на вступление."""
+    """Автоматически одобряет любую заявку на вступление, без сообщений."""
     join_request = update.chat_join_request
     user = join_request.from_user
     chat = join_request.chat
@@ -48,17 +49,6 @@ async def auto_approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             user_id=user.id,
         )
         logger.info("Одобрена заявка: %s (id=%s) -> %s", user.full_name, user.id, chat.title)
-
-        # Опционально: приветственное сообщение пользователю в личку.
-        # Сработает, только если пользователь раньше писал боту/нажимал Start.
-        try:
-            await context.bot.send_message(
-                chat_id=user.id,
-                text=f"Привет, {user.first_name}! Ваша заявка в «{chat.title}» одобрена ✅",
-            )
-        except Exception:
-            # Если у пользователя закрыты личные сообщения от бота — просто пропускаем
-            pass
 
     except Exception as e:
         logger.error("Не удалось одобрить заявку от %s: %s", user.id, e)
